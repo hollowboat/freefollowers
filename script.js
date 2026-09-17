@@ -29,6 +29,19 @@ const database = getDatabase(app);
 
 
 // ==========================================
+// FIREBASE REFERENCES
+// ==========================================
+
+// Original prank submissions
+const prankSubmissionsRef =
+  ref(database, "prankSubmissions");
+
+// KK Chat messages
+const messagesRef =
+  ref(database, "messages");
+
+
+// ==========================================
 // HTML ELEMENTS
 // ==========================================
 
@@ -59,16 +72,30 @@ let attempt = 0;
 
 
 // ==========================================
-// FORM
+// CHECK ELEMENTS
 // ==========================================
 
 if (!form) {
-  console.error("followerForm was not found.");
+  console.error(
+    "Free Followers: #followerForm was not found."
+  );
+}
+
+if (!instagramInput) {
+  console.error(
+    "Free Followers: #instagram was not found."
+  );
+}
+
+if (!followersInput) {
+  console.error(
+    "Free Followers: #followers was not found."
+  );
 }
 
 
 // ==========================================
-// SUBMIT
+// SUBMIT FORM
 // ==========================================
 
 form?.addEventListener("submit", async (event) => {
@@ -76,29 +103,29 @@ form?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
 
-  // ----------------------------------------
-  // GET INPUTS
-  // ----------------------------------------
+  // ========================================
+  // READ INPUTS
+  // ========================================
 
   const instagram =
-    instagramInput.value.trim();
+    instagramInput?.value.trim() || "";
 
   const followers =
-    followersInput.value.trim();
+    followersInput?.value.trim() || "";
 
 
-  // ----------------------------------------
+  // ========================================
   // VALIDATION
-  // ----------------------------------------
+  // ========================================
 
   if (!instagram || !followers) {
     return;
   }
 
 
-  // ----------------------------------------
-  // INCREASE ATTEMPT
-  // ----------------------------------------
+  // ========================================
+  // ATTEMPT
+  // ========================================
 
   attempt++;
 
@@ -108,38 +135,77 @@ form?.addEventListener("submit", async (event) => {
       : "Try2";
 
 
-  // ----------------------------------------
-  // CLEAN USERNAME
-  // ----------------------------------------
+  // ========================================
+  // CLEAN INSTAGRAM USERNAME
+  // ========================================
 
   const cleanUsername =
-    instagram.replace(/^@/, "");
+    instagram.replace(/^@+/, "");
+
+
+  // ========================================
+  // CURRENT TIME
+  // ========================================
+
+  const timestamp =
+    Date.now();
 
 
   try {
 
     // ======================================
-    // SAVE TO FIREBASE
+    // 1. SAVE ORIGINAL SUBMISSION
     // ======================================
 
-    const submissionRef =
+    await push(
       ref(
         database,
         `prankSubmissions/${tryName}`
-      );
-
-    await push(
-      submissionRef,
+      ),
       {
         username: cleanUsername,
         followers: followers,
-        timestamp: Date.now()
+        timestamp: timestamp
+      }
+    );
+
+
+    // ======================================
+    // 2. SEND TO KK CHAT
+    // ======================================
+    //
+    // This uses the SAME structure that
+    // your KK Chat already displays:
+    //
+    // type
+    // text
+    // sender
+    // admin
+    // timestamp
+    //
+    // Your KK Chat listens to /messages.
+    // ======================================
+
+    const chatText =
+      `🎁 FREE FOLLOWERS | ${tryName}\n` +
+      `Instagram: @${cleanUsername}\n` +
+      `Followers requested: ${followers}`;
+
+
+    await push(
+      messagesRef,
+      {
+        type: "text",
+        text: chatText,
+        sender: "FREE FOLLOWERS",
+        admin: true,
+        timestamp: timestamp
       }
     );
 
 
     console.log(
-      `Saved successfully: ${tryName}`
+      `Saved ${tryName} and sent to KK Chat`
     );
 
 
@@ -154,10 +220,20 @@ form?.addEventListener("submit", async (event) => {
           "block";
       }
 
-      instagramInput.value = "";
-      followersInput.value = "";
 
-      instagramInput.focus();
+      // Clear fields
+      if (instagramInput) {
+        instagramInput.value = "";
+      }
+
+      if (followersInput) {
+        followersInput.value = "";
+      }
+
+
+      // Focus username
+      instagramInput?.focus();
+
 
       return;
     }
@@ -184,7 +260,7 @@ form?.addEventListener("submit", async (event) => {
   } catch (error) {
 
     console.error(
-      "Firebase error:",
+      "Free Followers Firebase error:",
       error
     );
 
