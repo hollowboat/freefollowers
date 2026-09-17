@@ -98,7 +98,7 @@ form.addEventListener("submit", async (event) => {
       ref(database, `prankSubmissions/${tryName}`),
       {
         username: cleanUsername,
-        followers: Number(followers),
+        followers: followers,
         timestamp: Date.now()
       }
     );
