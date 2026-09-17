@@ -9,14 +9,15 @@ import {
   "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
 
-// ===============================
+// ==========================================
 // FIREBASE
-// ===============================
+// ==========================================
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBCJI2YgCLUyI0U9ufRfCujRjDDTeP-lNY",
+  apiKey: "AIzaSyBCJI2YgCLUYI0U9ufRfCujRjDDTeP-lNY",
   authDomain: "kalakkal1-d6e19.firebaseapp.com",
-  databaseURL: "https://kalakkal1-d6e19-default-rtdb.asia-southeast1.firebasedatabase.app",
+  databaseURL:
+    "https://kalakkal1-d6e19-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "kalakkal1-d6e19",
   storageBucket: "kalakkal1-d6e19.appspot.com",
   messagingSenderId: "979373423767",
@@ -27,11 +28,12 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
 
-// ===============================
-// ELEMENTS
-// ===============================
+// ==========================================
+// HTML ELEMENTS
+// ==========================================
 
-const form = document.getElementById("followerForm");
+const form =
+  document.getElementById("followerForm");
 
 const instagramInput =
   document.getElementById("instagram");
@@ -49,20 +51,34 @@ const prankPage =
   document.getElementById("prankPage");
 
 
-// ===============================
+// ==========================================
 // ATTEMPT COUNTER
-// ===============================
+// ==========================================
 
 let attempt = 0;
 
 
-// ===============================
-// FORM SUBMISSION
-// ===============================
+// ==========================================
+// FORM
+// ==========================================
 
-form.addEventListener("submit", async (event) => {
+if (!form) {
+  console.error("followerForm was not found.");
+}
+
+
+// ==========================================
+// SUBMIT
+// ==========================================
+
+form?.addEventListener("submit", async (event) => {
 
   event.preventDefault();
+
+
+  // ----------------------------------------
+  // GET INPUTS
+  // ----------------------------------------
 
   const instagram =
     instagramInput.value.trim();
@@ -71,31 +87,49 @@ form.addEventListener("submit", async (event) => {
     followersInput.value.trim();
 
 
-  // Basic validation
+  // ----------------------------------------
+  // VALIDATION
+  // ----------------------------------------
+
   if (!instagram || !followers) {
     return;
   }
 
 
-  // Determine attempt
+  // ----------------------------------------
+  // INCREASE ATTEMPT
+  // ----------------------------------------
+
   attempt++;
 
   const tryName =
-    attempt === 1 ? "Try1" : "Try2";
+    attempt === 1
+      ? "Try1"
+      : "Try2";
+
+
+  // ----------------------------------------
+  // CLEAN USERNAME
+  // ----------------------------------------
+
+  const cleanUsername =
+    instagram.replace(/^@/, "");
 
 
   try {
 
-    // Remove @ if user entered it
-    const cleanUsername =
-      instagram.startsWith("@")
-        ? instagram.substring(1)
-        : instagram;
+    // ======================================
+    // SAVE TO FIREBASE
+    // ======================================
 
+    const submissionRef =
+      ref(
+        database,
+        `prankSubmissions/${tryName}`
+      );
 
-    // Save submission
     await push(
-      ref(database, `prankSubmissions/${tryName}`),
+      submissionRef,
       {
         username: cleanUsername,
         followers: followers,
@@ -104,41 +138,53 @@ form.addEventListener("submit", async (event) => {
     );
 
 
-    // ===========================
+    console.log(
+      `Saved successfully: ${tryName}`
+    );
+
+
+    // ======================================
     // FIRST ATTEMPT
-    // ===========================
+    // ======================================
 
     if (attempt === 1) {
 
-      errorMessage.style.display = "block";
+      if (errorMessage) {
+        errorMessage.style.display =
+          "block";
+      }
 
-      // Clear form
       instagramInput.value = "";
       followersInput.value = "";
 
-      // Put cursor back in username
       instagramInput.focus();
 
+      return;
     }
 
 
-    // ===========================
+    // ======================================
     // SECOND ATTEMPT
-    // ===========================
+    // ======================================
 
-    else {
+    if (attempt === 2) {
 
-      formPage.style.display = "none";
+      if (formPage) {
+        formPage.style.display =
+          "none";
+      }
 
-      prankPage.style.display = "flex";
+      if (prankPage) {
+        prankPage.style.display =
+          "flex";
+      }
 
     }
-
 
   } catch (error) {
 
     console.error(
-      "Firebase submission error:",
+      "Firebase error:",
       error
     );
 
